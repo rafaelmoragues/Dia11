@@ -1,0 +1,21 @@
+﻿@model Dia11.Models.Unidad
+
+@{
+    ViewData["Title"] = "Configuracion";
+}
+
+<h1>Configuracion de unidades</h1>
+<div class= "mb-3">
+<a class="btn btn-primary" asp-area="" asp-controller="Unidad" asp-action="Create">Agregar Unidad</a>
+<a class="btn btn-primary" asp-area="" asp-controller="Unidad" asp-action="Index">Eliminar Unidad</a>
+</div>
+<div class= "mb-3"> 
+    <a class="btn btn-primary" asp-area="" asp-controller="Consecionarias" asp-action="Details" asp-route-id="2">Modificar Encabezado</a>
+    <a class="btn btn-primary" asp-area="" asp-controller="Consecionarias" asp-action="Details2" asp-route-id="2">Modificar Contacto</a>
+
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
