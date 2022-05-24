@@ -7,23 +7,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Dia11.Data;
 using Dia11.Models;
+using Dia11.UnitOfWork;
+using Dia11.Repositories.Implementaciones;
+using Dia11.Repositories;
 
 namespace Dia11.Controllers
 {
     public class UnidadController : Controller
     {
-        private readonly ApplicationDbContext _context;
 
-        public UnidadController(ApplicationDbContext context)
+        private readonly IUnitOfWork _unitOfWork;
+        public UnidadController(IUnitOfWork unit)
         {
-            _context = context;
+            _unitOfWork = unit;
         }
 
         // GET: Unidad
 
         public async Task<IActionResult> Index()
         {
-            var unidades = _context.Unidades.ToList();
+            var unidades = await _unitOfWork.RepoUnidad.GetAll();
             return View(unidades);
 
         }
@@ -31,13 +34,12 @@ namespace Dia11.Controllers
         // GET: Unidad/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Unidades == null)
+            if (id == null || _unitOfWork.RepoUnidad == null)
             {
                 return NotFound();
             }
 
-            var unidad = await _context.Unidades
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var unidad = await _unitOfWork.RepoUnidad.GetById(id);
             if (unidad == null)
             {
                 return NotFound();
@@ -61,8 +63,8 @@ namespace Dia11.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(unidad);
-                await _context.SaveChangesAsync();
+                await _unitOfWork.RepoUnidad.Insert(unidad);
+                await _unitOfWork.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
             return View(unidad);
@@ -71,12 +73,12 @@ namespace Dia11.Controllers
         // GET: Unidad/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Unidades == null)
+            if (id == null || _unitOfWork.RepoUnidad == null)
             {
                 return NotFound();
             }
 
-            var unidad = await _context.Unidades.FindAsync(id);
+            var unidad = await _unitOfWork.RepoUnidad.GetById(id);
             if (unidad == null)
             {
                 return NotFound();
@@ -100,8 +102,8 @@ namespace Dia11.Controllers
             {
                 try
                 {
-                    _context.Update(unidad);
-                    await _context.SaveChangesAsync();
+                    await _unitOfWork.RepoUnidad.Update(unidad);
+                    await _unitOfWork.SaveChanges();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -122,13 +124,12 @@ namespace Dia11.Controllers
         // GET: Unidad/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Unidades == null)
+            if (id == null || _unitOfWork.RepoUnidad == null)
             {
                 return NotFound();
             }
 
-            var unidad = await _context.Unidades
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var unidad = await _unitOfWork.RepoUnidad.GetById(id);
             if (unidad == null)
             {
                 return NotFound();
@@ -142,23 +143,23 @@ namespace Dia11.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Unidades == null)
+            if (_unitOfWork.RepoUnidad == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Unidades'  is null.");
             }
-            var unidad = await _context.Unidades.FindAsync(id);
+            var unidad = await _unitOfWork.RepoUnidad.GetById(id);
             if (unidad != null)
             {
-                _context.Unidades.Remove(unidad);
+                await _unitOfWork.RepoUnidad.Delete(id);
             }
-            
-            await _context.SaveChangesAsync();
+
+            await _unitOfWork.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
 
         private bool UnidadExists(int id)
         {
-          return (_context.Unidades?.Any(e => e.Id == id)).GetValueOrDefault();
+            return true; //(_context.Unidades?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

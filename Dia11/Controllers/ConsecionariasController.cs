@@ -7,22 +7,23 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Dia11.Data;
 using Dia11.Models;
+using Dia11.UnitOfWork;
 
 namespace Dia11.Controllers
 {
     public class ConsecionariasController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ConsecionariasController(ApplicationDbContext context)
+        public ConsecionariasController(IUnitOfWork unit)
         {
-            _context = context;
+            _unitOfWork = unit;
         }
 
         // GET: Consecionarias
         public async Task<IActionResult> Index()
         {
-            var cons = _context.Consecionarias.ToList();
+            var cons = _unitOfWork.RepoConsesionaria.GetAll();
               return View(cons);
 
         }
@@ -30,13 +31,12 @@ namespace Dia11.Controllers
         // GET: Consecionarias/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Consecionarias == null)
+            if (id == null || _unitOfWork.RepoConsesionaria == null)
             {
                 return NotFound();
             }
 
-            var consecionaria = await _context.Consecionarias
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var consecionaria = await _unitOfWork.RepoConsesionaria.GetById(id);
             if (consecionaria == null)
             {
                 return NotFound();
@@ -46,13 +46,12 @@ namespace Dia11.Controllers
         }
         public async Task<IActionResult> Details2(int? id)
         {
-            if (id == null || _context.Consecionarias == null)
+            if (id == null || _unitOfWork.RepoConsesionaria == null)
             {
                 return NotFound();
             }
 
-            var consecionaria = await _context.Consecionarias
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var consecionaria = await _unitOfWork.RepoConsesionaria.GetById(id);
             if (consecionaria == null)
             {
                 return NotFound();
@@ -76,8 +75,8 @@ namespace Dia11.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(consecionaria);
-                await _context.SaveChangesAsync();
+                _unitOfWork.RepoConsesionaria.Insert(consecionaria);
+                await _unitOfWork.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
             return View(consecionaria);
@@ -86,12 +85,12 @@ namespace Dia11.Controllers
         // GET: Consecionarias/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Consecionarias == null)
+            if (id == null || _unitOfWork.RepoConsesionaria == null)
             {
                 return NotFound();
             }
 
-            var consecionaria = await _context.Consecionarias.FindAsync(id);
+            var consecionaria = await _unitOfWork.RepoConsesionaria.GetById(id);
             if (consecionaria == null)
             {
                 return NotFound();
@@ -100,12 +99,12 @@ namespace Dia11.Controllers
         }
         public async Task<IActionResult> Edit2(int? id)
         {
-            if (id == null || _context.Consecionarias == null)
+            if (id == null || _unitOfWork.RepoConsesionaria == null)
             {
                 return NotFound();
             }
 
-            var consecionaria = await _context.Consecionarias.FindAsync(id);
+            var consecionaria = await _unitOfWork.RepoConsesionaria.GetById(id);
             if (consecionaria == null)
             {
                 return NotFound();
@@ -129,8 +128,8 @@ namespace Dia11.Controllers
             {
                 try
                 {
-                    _context.Update(consecionaria);
-                    await _context.SaveChangesAsync();
+                    await _unitOfWork.RepoConsesionaria.Update(consecionaria);
+                    await _unitOfWork.SaveChanges();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -160,8 +159,8 @@ namespace Dia11.Controllers
             {
                 try
                 {
-                    _context.Update(consecionaria);
-                    await _context.SaveChangesAsync();
+                    await _unitOfWork.RepoConsesionaria.Update(consecionaria);
+                    await _unitOfWork.SaveChanges();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -182,13 +181,12 @@ namespace Dia11.Controllers
         // GET: Consecionarias/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Consecionarias == null)
+            if (id == null || _unitOfWork.RepoConsesionaria == null)
             {
                 return NotFound();
             }
 
-            var consecionaria = await _context.Consecionarias
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var consecionaria = await _unitOfWork.RepoConsesionaria.GetById(id);
             if (consecionaria == null)
             {
                 return NotFound();
@@ -202,23 +200,23 @@ namespace Dia11.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Consecionarias == null)
+            if (_unitOfWork.RepoConsesionaria == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Consecionarias'  is null.");
             }
-            var consecionaria = await _context.Consecionarias.FindAsync(id);
+            var consecionaria = await _unitOfWork.RepoConsesionaria.GetById(id);
             if (consecionaria != null)
             {
-                _context.Consecionarias.Remove(consecionaria);
+                await _unitOfWork.RepoConsesionaria.Delete(id);
             }
-            
-            await _context.SaveChangesAsync();
+
+            await _unitOfWork.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ConsecionariaExists(int id)
         {
-          return (_context.Consecionarias?.Any(e => e.Id == id)).GetValueOrDefault();
+            return true; // (_context.Consecionarias?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
